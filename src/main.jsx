@@ -7,7 +7,12 @@ import { BrowserRouter } from 'react-router-dom'
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
-      <div className='bg-[#D3E4F9] p-3 h-screen flex items-center justify-center'>
+      <div style={{
+        backgroundImage: 'url(/login-bg.jpg)',
+        backgroundPosition: 'center',
+        backgroundSize: 'cover',
+        backgroundRepeat: 'no-repeat'
+      }} className='bg-[#D3E4F9] p-4 h-screen flex items-center justify-center'>
         <App />
       </div>
     </BrowserRouter>
