@@ -15,13 +15,60 @@ export default function CreateTenant() {
         adminPassword: ''
     });
     const [showModal, setShowModal] = useState(false);
+    const [errors, setErrors] = useState({});
 
     const handleInputChange = (field, value) => {
         setFormData(prev => ({ ...prev, [field]: value }));
+        
+        // Clear error when user starts typing
+        if (errors[field]) {
+            setErrors(prev => ({ ...prev, [field]: '' }));
+        }
+    };
+
+    const validateStep1 = () => {
+        const newErrors = {};
+        
+        if (!formData.tenantName) newErrors.tenantName = 'Tenant name is required';
+        if (!formData.domain) newErrors.domain = 'Domain is required';
+        if (!formData.address) newErrors.address = 'Address is required';
+        
+        // NPI validation - at least 10 digits
+        if (!formData.npi) {
+            newErrors.npi = 'NPI is required';
+        } else if (!/^\d{10,}$/.test(formData.npi)) {
+            newErrors.npi = 'NPI must be at least 10 digits';
+        }
+        
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+
+    const validateStep2 = () => {
+        const newErrors = {};
+        
+        if (!formData.adminName) newErrors.adminName = 'Admin name is required';
+        if (!formData.adminEmail) {
+            newErrors.adminEmail = 'Email is required';
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.adminEmail)) {
+            newErrors.adminEmail = 'Please enter a valid email address';
+        }
+        
+        // Password validation - at least 8 characters with letters and numbers
+        if (!formData.adminPassword) {
+            newErrors.adminPassword = 'Password is required';
+        } else if (formData.adminPassword.length < 8) {
+            newErrors.adminPassword = 'Password must be at least 8 characters';
+        } else if (!/(?=.*[a-zA-Z])(?=.*\d)/.test(formData.adminPassword)) {
+            newErrors.adminPassword = 'Password must contain both letters and numbers';
+        }
+        
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
     };
 
     const handleNext = () => {
-        if (currentStep < 2) {
+        if (validateStep1() && currentStep < 2) {
             setCurrentStep(currentStep + 1);
         }
     };
@@ -33,6 +80,11 @@ export default function CreateTenant() {
     };
 
     const handleCreateTenant = async () => {
+        // Validate step 2 before submitting
+        if (!validateStep2()) {
+            return Promise.reject(new Error('Please fix the validation errors'));
+        }
+        
         try {
             const response = await userSignup(formData);
             console.log('Tenant created successfully:', response);
@@ -63,13 +115,16 @@ export default function CreateTenant() {
             adminEmail: '',
             adminPhone: ''
         });
-
         
+        // Clear errors
+        setErrors({});
         setCurrentStep(1);
     };
 
-    const isStep1Valid = formData.tenantName && formData.domain && formData.address && formData.npi;
-    const isStep2Valid = formData.adminName && formData.adminEmail;
+    const isStep1Valid = formData.tenantName && formData.domain && formData.address && formData.npi && formData.npi.length >= 10;
+    const isStep2Valid = formData.adminName && formData.adminEmail && formData.adminPassword && 
+                         formData.adminPassword.length >= 8 && 
+                         /(?=.*[a-zA-Z])(?=.*\d)/.test(formData.adminPassword);
 
     return (
         <div className="h-full bg-white border rounded-2xl overflow-hidden border-gray-200 flex flex-col">
@@ -105,8 +160,13 @@ export default function CreateTenant() {
                                             value={formData.tenantName}
                                             onChange={(e) => handleInputChange('tenantName', e.target.value)}
                                             placeholder="Enter tenant name"
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                                                errors.tenantName ? 'border-red-500' : 'border-gray-300'
+                                            }`}
                                         />
+                                        {errors.tenantName && (
+                                            <p className="mt-1 text-xs text-red-500">{errors.tenantName}</p>
+                                        )}
                                     </div>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -116,11 +176,15 @@ export default function CreateTenant() {
                                             type="text"
                                             value={formData.domain}
                                             onChange={(e) => handleInputChange('domain', e.target.value)}
-                                            placeholder="Enter domain details"
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                            placeholder="eg. hospital.com"
+                                            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                                                errors.domain ? 'border-red-500' : 'border-gray-300'
+                                            }`}
                                         />
+                                        {errors.domain && (
+                                            <p className="mt-1 text-xs text-red-500">{errors.domain}</p>
+                                        )}
                                     </div>
-
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
@@ -130,10 +194,17 @@ export default function CreateTenant() {
                                         <input
                                             type="text"
                                             value={formData.npi}
-                                            onChange={(e) => handleInputChange('npi', e.target.value)}
-                                            placeholder="Enter National Provider Identifier (NPI)"
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                            onChange={(e) => handleInputChange('npi', e.target.value.replace(/\D/g, ''))}
+                                            placeholder="XXXXXXXXXX"
+                                            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                                                errors.npi ? 'border-red-500' : 'border-gray-300'
+                                            }`}
+                                            maxLength={15}
                                         />
+                                        <p className="mt-1 ml-2 text-xs text-gray-500">At least 10 digits</p>
+                                        {errors.npi && (
+                                            <p className="mt-1 text-xs text-red-500">{errors.npi}</p>
+                                        )}
                                     </div>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -144,8 +215,13 @@ export default function CreateTenant() {
                                             value={formData.address}
                                             onChange={(e) => handleInputChange('address', e.target.value)}
                                             placeholder="Enter Address"
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                                                errors.address ? 'border-red-500' : 'border-gray-300'
+                                            }`}
                                         />
+                                        {errors.address && (
+                                            <p className="mt-1 text-xs text-red-500">{errors.address}</p>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -165,8 +241,13 @@ export default function CreateTenant() {
                                         value={formData.adminName}
                                         onChange={(e) => handleInputChange('adminName', e.target.value)}
                                         placeholder="Enter admin name"
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                                            errors.adminName ? 'border-red-500' : 'border-gray-300'
+                                        }`}
                                     />
+                                    {errors.adminName && (
+                                        <p className="mt-1 text-xs text-red-500">{errors.adminName}</p>
+                                    )}
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
@@ -178,8 +259,13 @@ export default function CreateTenant() {
                                             value={formData.adminEmail}
                                             onChange={(e) => handleInputChange('adminEmail', e.target.value)}
                                             placeholder="Enter admin Email ID"
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                                                errors.adminEmail ? 'border-red-500' : 'border-gray-300'
+                                            }`}
                                         />
+                                        {errors.adminEmail && (
+                                            <p className="mt-1 text-xs text-red-500">{errors.adminEmail}</p>
+                                        )}
                                     </div>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -190,12 +276,20 @@ export default function CreateTenant() {
                                             value={formData.adminPassword}
                                             onChange={(e) => handleInputChange('adminPassword', e.target.value)}
                                             placeholder="Enter admin Password"
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                                                errors.adminPassword ? 'border-red-500' : 'border-gray-300'
+                                            }`}
                                         />
+                                        {errors.adminPassword && (
+                                            <p className="mt-1 text-xs text-red-500">{errors.adminPassword}</p>
+                                        )}
+                                        <p className="mt-1 ml-2 text-xs text-gray-500">
+                                            Must be at least 8 characters with letters and numbers
+                                        </p>
                                     </div>
                                 </div>
                                 <div className="flex items-center space-x-2 mt-6">
-                                    <div className="w-5 h-5 rounded-full   flex items-center justify-center">
+                                    <div className="w-5 h-5 rounded-full flex items-center justify-center">
                                         <img src="/i.svg" alt="" />
                                     </div>
                                     <span className="text-sm text-gray-600">

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { ChevronDown, Users, Building, Settings, HelpCircle, LogOut, ChevronLeft, ChevronRight } from 'lucide-react';
 import { getTenants } from '../Services/api';
 import { useNavigate } from 'react-router-dom';
+import ShimmerLoader from '../components/ShimmerLoader';
 
 // TenantSidebar Component (unchanged)
 const TenantSidebar = ({ isCollapsed, toggleSidebar }) => {
@@ -18,17 +19,17 @@ const TenantSidebar = ({ isCollapsed, toggleSidebar }) => {
   return (
     <div className={`bg-[#FFFFFFF0] border-r border-gray-200 h-full flex flex-col overflow-y-auto transition-all duration-300 ${isCollapsed ? 'w-15' : 'w-64'}`}>
 
-      <div className={`p-2 ${isCollapsed ? '' : 'border-b border-gray-200'} flex justify-between items-center`}>
+      <div className={`p-2 ${isCollapsed ? '' : ''} flex justify-between items-center`}>
         <button
-            onClick={toggleSidebar}
-            className={`p-1 mt-[1px] ml-1 transition-all duration-200 rounded-md cursor-pointer hover:bg-gray-100`}
-          >
-            <img 
-              src="/sidebar.svg" 
-              alt="" 
-              className={`transform transition-transform duration-300 ${isCollapsed ? 'scale-x-[-1]' : ''}`}
-            />
-          </button>
+          onClick={toggleSidebar}
+          className={`p-1 mt-[1px] ml-1 transition-all duration-200 rounded-md cursor-pointer hover:bg-gray-100`}
+        >
+          <img
+            src="/sidebar.svg"
+            alt=""
+            className={`transform transition-transform duration-300 ${isCollapsed ? 'scale-x-[-1]' : ''}`}
+          />
+        </button>
       </div>
 
       {/* Dropdown Section */}
@@ -38,7 +39,7 @@ const TenantSidebar = ({ isCollapsed, toggleSidebar }) => {
             <div className="relative">
               <button
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className="w-full flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                className="w-full flex items-center justify-between p-3  rounded-lg hover:bg-gray-100 transition-colors"
               >
                 <span className="text-xs font-medium text-gray-700">Lorem Ipsum</span>
                 <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
@@ -94,7 +95,7 @@ const TenantSidebar = ({ isCollapsed, toggleSidebar }) => {
 
             {/* Second Dropdown */}
             <div className="mt-4">
-              <div className="p-3 bg-gray-50 rounded-lg">
+              <div className="p-3  rounded-lg">
                 <span className="text-xs font-medium text-gray-700">Lorem Ipsum</span>
                 <div className="mt-2 space-y-1">
                   <div className="flex items-center">
@@ -112,7 +113,7 @@ const TenantSidebar = ({ isCollapsed, toggleSidebar }) => {
             {/* Region Selector */}
             <div className="mt-4">
               <label className="block text-xs font-medium text-gray-700 mb-2">Region</label>
-              <div className="flex items-center p-2 bg-gray-50 rounded-lg">
+              <div className="flex items-center p-2  rounded-lg">
                 <span className="text-lg mr-2">🇺🇸</span>
                 <span className="text-xs text-gray-700">North America</span>
                 <ChevronDown className="w-4 h-4 text-gray-500 ml-auto" />
@@ -150,6 +151,7 @@ const TenantSidebar = ({ isCollapsed, toggleSidebar }) => {
 // Main Dashboard Component
 const TenantDashboard = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Your actual tenant data
   const [tenantData, setTenantData] = useState([]);
@@ -157,11 +159,14 @@ const TenantDashboard = () => {
 
   useEffect(() => {
     const fetchTenants = async () => {
+      setIsLoading(true);
       try {
         const data = await getTenants();
         setTenantData(data);
+        setIsLoading(false);
       } catch (error) {
         console.error('Failed to fetch tenants:', error);
+        setIsLoading(false);
       }
     };
 
@@ -277,25 +282,33 @@ const TenantDashboard = () => {
                   </div>
                 </div>
 
-                {/* Content Rows */}
-                {transformedTenantData.map((tenant) => (
-                  <div
-                    key={tenant.id}
-                    className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
-                  >
-                    <div className="flex">
-                      {columns.map((column, index) => (
-                        <div
-                          key={column.key}
-                          className={`${column.width} px-6 py-3 flex-shrink-0 flex items-center ${index < columns.length - 1 ? 'border-r border-gray-200' : ''
-                            }`}
-                        >
-                          {renderCellContent(tenant, column.key)}
+                {isLoading ? (
+                  <ShimmerLoader />
+                ) : (
+                  <div>
+                    {/* Content Rows */}
+                    {transformedTenantData.map((tenant) => (
+                      <div
+                        key={tenant.id}
+                        onClick={() => navigate(`/tenant-management/${tenant.id}`)}
+                        className="border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors"
+                      >
+                        <div className="flex">
+                          {columns.map((column, index) => (
+                            <div
+                              key={column.key}
+                              className={`${column.width} px-6 py-3 flex-shrink-0 flex items-center ${index < columns.length - 1 ? 'border-r border-gray-200' : ''
+                                }`}
+                            >
+                              {renderCellContent(tenant, column.key)}
+                            </div>
+                          ))}
                         </div>
-                      ))}
-                    </div>
+                      </div>
+                    ))}
                   </div>
-                ))}
+                )}
+
               </div>
             </div>
           </div>
