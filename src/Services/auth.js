@@ -3,16 +3,17 @@ const BASE_URL = "https://p01--ayra-backend--5gwtzqz9pfqz.code.run";
 
 export const sendCredentials = async (data) => {
   try {
+    const formData = new URLSearchParams();
+    formData.append("tenant_id", data.tenant_id);
+    formData.append("identifier", data.identifier);
+    formData.append("password", data.password);
+
     const response = await fetch(`${BASE_URL}/api/v1/send-creds`, {
       method: "POST",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
       },
-      body: JSON.stringify({
-        tenant_id: data.tenant_id,
-        identifier: data.identifier,
-        password: data.password
-      }),
+      body: formData.toString(),  // <-- URL encoded body
     });
 
     if (!response.ok) {
