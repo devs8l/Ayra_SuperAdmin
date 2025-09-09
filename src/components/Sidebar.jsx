@@ -65,8 +65,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
                     key={index}
                     to={item.path}
                     className={`flex items-center space-x-3 px-3 py-3 rounded-md text-xs transition-all duration-200 ${isActive
-                        ? 'bg-blue-50 text-blue-600 font-medium'
-                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                      ? 'bg-blue-50 text-blue-600 font-medium'
+                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                       }`}
                   >
                     <Icon size={18} />
@@ -84,17 +84,30 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
   // Desktop sidebar with smooth transitions
   return (
     <aside
-      className={`bg-white  h-screen sticky top-0 transition-all duration-300 ease-in-out overflow-hidden flex-shrink-0 ${sidebarOpen ? 'w-64' : 'w-16'
+      className={`bg-white  h-screen sticky top-0 transition-all duration-300 ease-in-out overflow-hidden flex-shrink-0 ${sidebarOpen ? 'w-64' : 'w-19'
         }`}
     >
-      <div className="p-4 flex flex-col h-full">
-        <div className="flex justify-between items-center mb-6">
+      <div className={`p-4 flex flex-col items-start h-full`}>
+        <div className=''>
+          {sidebarOpen ?
+            (<div className="flex items-center ml-2 w-19">
+              <img src="/Ayra.svg" alt="Ayra Logo" className="w-full h-full" />
+            </div>) :
+            (<div className="flex items-center ml-2 w-6">
+              <img src="/star.svg" alt="Ayra Logo" className="w-full h-full" />
+            </div>)}
+        </div>
 
+        <div className="flex justify-between items-center mt-7 mb-6">
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="p-1 mt-[1px] rounded-md cursor-pointer hover:bg-gray-100 transition-colors duration-200"
+            className={`p-1 mt-[3px] ${sidebarOpen ? 'ml-1' : 'ml-1'} transition-all items-center duration-200 rounded-md cursor-pointer hover:bg-gray-100`}
           >
-            <img src="/sidebar.svg" alt="" />
+            <img
+              src="/sidebar.svg"
+              alt=""
+              className={`transform transition-transform duration-300 ${!sidebarOpen ? 'scale-x-[-1]' : ''}`}
+            />
           </button>
         </div>
 
@@ -107,16 +120,17 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
               <Link
                 key={index}
                 to={item.path}
-                className={`flex items-center px-3 py-3 rounded-md transition-all duration-200 ${isActive && sidebarOpen
-                    ? 'bg-blue-50 '
-                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                className={`flex items-center px-3 py-3 rounded-md transition-all duration-400 ease-in ${isActive && sidebarOpen
+                  ? 'bg-blue-50 '
+                  : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                   } ${sidebarOpen ? 'space-x-3' : 'justify-center'}`}
                 title={!sidebarOpen ? item.label : undefined}
               >
+                {!sidebarOpen ? <Icon size={sidebarOpen ? 20 : 20} className="flex-shrink-0" /> : null}
 
                 {sidebarOpen && (
                   <div className='flex items-center gap-3'>
-                    <Icon size={sidebarOpen ? 18 : 20} className="flex-shrink-0" />
+                    <Icon size={sidebarOpen ? 20 : 20} className="flex-shrink-0" />
                     <span className="text-xs transition-opacity duration-200 delay-100 whitespace-nowrap">
                       {item.label}
                     </span>
@@ -127,7 +141,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
           })}
         </nav>
       </div>
-    </aside>
+    </aside >
   );
 };
 

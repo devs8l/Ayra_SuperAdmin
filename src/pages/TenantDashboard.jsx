@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { ChevronDown, Users, Building, Settings, HelpCircle, LogOut, ChevronLeft, ChevronRight } from 'lucide-react';
 import { getTenants } from '../Services/api';
+import { useNavigate } from 'react-router-dom';
 
 // TenantSidebar Component (unchanged)
 const TenantSidebar = ({ isCollapsed, toggleSidebar }) => {
@@ -15,16 +16,19 @@ const TenantSidebar = ({ isCollapsed, toggleSidebar }) => {
   ];
 
   return (
-    <div className={`bg-[#FFFFFFF0] border-r border-gray-200 h-full flex flex-col transition-all duration-300 ${isCollapsed ? 'w-15' : 'w-64'}`}>
-      
+    <div className={`bg-[#FFFFFFF0] border-r border-gray-200 h-full flex flex-col overflow-y-auto transition-all duration-300 ${isCollapsed ? 'w-15' : 'w-64'}`}>
+
       <div className={`p-2 ${isCollapsed ? '' : 'border-b border-gray-200'} flex justify-between items-center`}>
-        
-        <button 
-          onClick={toggleSidebar}
-          className="p-1 rounded hover:bg-gray-100 ml-1 transition-colors"
-        >
-          {isCollapsed ? <img src="/sidebar.svg" alt="" /> : <img src="/sidebar.svg" alt="" />}
-        </button>
+        <button
+            onClick={toggleSidebar}
+            className={`p-1 mt-[1px] ml-1 transition-all duration-200 rounded-md cursor-pointer hover:bg-gray-100`}
+          >
+            <img 
+              src="/sidebar.svg" 
+              alt="" 
+              className={`transform transition-transform duration-300 ${isCollapsed ? 'scale-x-[-1]' : ''}`}
+            />
+          </button>
       </div>
 
       {/* Dropdown Section */}
@@ -39,7 +43,7 @@ const TenantSidebar = ({ isCollapsed, toggleSidebar }) => {
                 <span className="text-xs font-medium text-gray-700">Lorem Ipsum</span>
                 <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
               </button>
-              
+
               {isDropdownOpen && (
                 <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
                   <div className="py-1">
@@ -125,11 +129,10 @@ const TenantSidebar = ({ isCollapsed, toggleSidebar }) => {
             <li key={index}>
               <a
                 href="#"
-                className={`flex items-center px-3 py-2 rounded-lg transition-colors ${
-                  item.active
-                    ? 'bg-blue-50 text-blue-600'
-                    : 'text-gray-700 hover:bg-gray-50'
-                }`}
+                className={`flex items-center px-3 py-2 rounded-lg transition-colors ${item.active
+                  ? 'bg-blue-50 text-blue-600'
+                  : 'text-gray-700 hover:bg-gray-50'
+                  }`}
               >
                 <item.icon className={`w-5 h-5 ${isCollapsed ? '' : 'mr-3'} ${item.active ? 'text-blue-600' : 'text-gray-400'}`} />
                 {!isCollapsed && item.label}
@@ -139,7 +142,7 @@ const TenantSidebar = ({ isCollapsed, toggleSidebar }) => {
         </ul>
       </nav>)}
 
-      
+
     </div>
   );
 };
@@ -147,9 +150,10 @@ const TenantSidebar = ({ isCollapsed, toggleSidebar }) => {
 // Main Dashboard Component
 const TenantDashboard = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  
+
   // Your actual tenant data
   const [tenantData, setTenantData] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchTenants = async () => {
@@ -174,9 +178,9 @@ const TenantDashboard = () => {
   const transformedTenantData = tenantData.map(tenant => ({
     id: tenant.tenant_id,
     tenantName: tenant.name || 'Unnamed Tenant',
-    admin: { 
+    admin: {
       name: 'Admin User', // You might want to get this from your actual data
-      avatar: '/api/placeholder/32/32' 
+      avatar: '/api/placeholder/32/32'
     },
     activeUsers: Math.floor(Math.random() * 20) + 1, // Random for demo, replace with actual data
     tenantStatus: tenant.is_active ? 'Active' : 'Inactive',
@@ -199,7 +203,7 @@ const TenantDashboard = () => {
     switch (columnKey) {
       case 'tenantName':
         return <span className="font-medium text-gray-900">{tenant.tenantName}</span>;
-      
+
       case 'admin':
         return (
           <div className="flex items-center">
@@ -211,10 +215,10 @@ const TenantDashboard = () => {
             <span className="text-gray-700 truncate">{tenant.admin.name}</span>
           </div>
         );
-      
+
       case 'activeUsers':
         return <span className="text-gray-900">{tenant.activeUsers}</span>;
-      
+
       case 'tenantStatus':
         return (
           <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
@@ -222,71 +226,77 @@ const TenantDashboard = () => {
             {tenant.tenantStatus}
           </span>
         );
-      
+
       case 'usageQuota':
         return <span className="text-gray-900">{tenant.usageQuota}</span>;
-      
+
       case 'dateCreated':
         return <span className="text-gray-700">{tenant.dateCreated}</span>;
-      
+
       case 'lorem':
         return <span className="text-gray-700">{tenant.lorem}</span>;
-      
+
       default:
         return null;
     }
   };
 
   return (
-    <div className="h-full border border-gray-200 overflow-hidden bg-gray-50 flex rounded-2xl text-xs">
-      {/* Sidebar */}
-      <TenantSidebar 
-        isCollapsed={isSidebarCollapsed} 
-        toggleSidebar={() => setIsSidebarCollapsed(!isSidebarCollapsed)} 
-      />
-      
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <div className="bg-white shadow-sm h-full flex flex-col overflow-hidden">
-          {/* Single Scrollable Container for Header and Content */}
-          <div className="flex-1 overflow-auto">
-            <div className="min-w-max">
-              {/* Fixed Header */}
-              <div className="bg-blue-50 border-b border-gray-200 sticky top-0 z-10">
-                <div className="flex">
-                  {columns.map((column, index) => (
-                    <div 
-                      key={column.key}
-                      className={`${column.width} px-6 py-4 font-medium text-gray-500 flex-shrink-0 ${
-                        index < columns.length - 1 ? 'border-r border-gray-200' : ''
-                      }`}
-                    >
-                      {column.label}
-                    </div>
-                  ))}
-                </div>
-              </div>
-              
-              {/* Content Rows */}
-              {transformedTenantData.map((tenant) => (
-                <div
-                  key={tenant.id}
-                  className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
-                >
+    <div className="h-full border border-gray-200 overflow-hidden bg-white flex flex-col rounded-2xl text-xs">
+      <div className='p-2 flex justify-end border-b border-gray-200'>
+        <button onClick={() => navigate('/tenant-signup')} className="bg-blue-600 cursor-pointer hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium flex items-center space-x-2">
+          <span>+</span>
+          <span>Create Tenant</span>
+        </button>
+      </div>
+      <div className='flex h-full overflow-hidden'>
+        {/* Sidebar */}
+        <TenantSidebar
+          isCollapsed={isSidebarCollapsed}
+          toggleSidebar={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+        />
+
+        {/* Main Content */}
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <div className="bg-white shadow-sm h-full flex flex-col overflow-hidden">
+            {/* Single Scrollable Container for Header and Content */}
+            <div className="flex-1 overflow-auto">
+              <div className="min-w-max">
+                {/* Fixed Header */}
+                <div className="bg-blue-50 border-b border-gray-200 sticky top-0 z-10">
                   <div className="flex">
                     {columns.map((column, index) => (
-                      <div 
+                      <div
                         key={column.key}
-                        className={`${column.width} px-6 py-3 flex-shrink-0 flex items-center ${
-                          index < columns.length - 1 ? 'border-r border-gray-200' : ''
-                        }`}
+                        className={`${column.width} px-6 py-4 font-medium text-gray-500 flex-shrink-0 ${index < columns.length - 1 ? 'border-r border-gray-200' : ''
+                          }`}
                       >
-                        {renderCellContent(tenant, column.key)}
+                        {column.label}
                       </div>
                     ))}
                   </div>
                 </div>
-              ))}
+
+                {/* Content Rows */}
+                {transformedTenantData.map((tenant) => (
+                  <div
+                    key={tenant.id}
+                    className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                  >
+                    <div className="flex">
+                      {columns.map((column, index) => (
+                        <div
+                          key={column.key}
+                          className={`${column.width} px-6 py-3 flex-shrink-0 flex items-center ${index < columns.length - 1 ? 'border-r border-gray-200' : ''
+                            }`}
+                        >
+                          {renderCellContent(tenant, column.key)}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>

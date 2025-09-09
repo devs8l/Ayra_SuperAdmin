@@ -8,7 +8,7 @@ const Layout = () => {
 
   return (
     <div className="h-full w-full flex flex-col rounded-2xl overflow-hidden justify-center">
-      <Navbar />
+      {/* <Navbar /> */}
       <div className="flex flex-1 overflow-hidden">
         <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
         <main 
