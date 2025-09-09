@@ -6,7 +6,7 @@ export const sendCredentials = async (data) => {
     const response = await fetch(`${BASE_URL}/api/v1/send-creds`, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
+        "Content-Type": "application/x-www-form-urlencoded",
       },
       body: JSON.stringify({
         tenant_id: data.tenant_id,
