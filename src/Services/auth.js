@@ -1,6 +1,36 @@
 
 const BASE_URL = "https://p01--ayra-backend--5gwtzqz9pfqz.code.run";
 
+export const sendCredentials = async (data) => {
+  try {
+    const response = await fetch(`${BASE_URL}/api/v1/send-creds`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        tenant_id: data.tenant_id,
+        identifier: data.identifier,
+        password: data.password
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || `Failed to send credentials: ${response.status}`);
+    }
+
+    const result = await response.json();
+    return { success: true, data: result };
+  } catch (error) {
+    console.error("Failed to send credentials:", error.message);
+    return {
+      success: false,
+      message: error.message || 'Failed to send credentials. Please try again.'
+    };
+  }
+};
+
 // tenant signup
 export const tenantSignup = async (data) => {
   try {
@@ -51,7 +81,7 @@ export const userSignup = async (data) => {
       },
       body: JSON.stringify({
         tenant_id: tenantResponse.data.tenant_id,
-        identifier: data.adminName.replace(/\s+/g, ''),
+        identifier: data.adminEmail,
         email: data.adminEmail,
         password: data.adminPassword,
         user_type: "admin",
@@ -66,6 +96,12 @@ export const userSignup = async (data) => {
 
     const result = await response.json();
     console.log("User signup successful:", result);
+    // After successful signup, send credentials
+    await sendCredentials({
+      tenant_id: tenantResponse.data.tenant_id,
+      identifier: data.adminEmail,
+      password: data.adminPassword
+    });
 
     return { success: true, data: result };
   } catch (error) {
