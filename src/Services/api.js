@@ -1,5 +1,5 @@
 
-const API_BASE_URL = 'https://p01--ayra-backend--5gwtzqz9pfqz.code.run';
+const API_BASE_URL = 'https://d1o5ayec4opwj2.cloudfront.net';
 
 export const getTenants = async () => {
   try {
